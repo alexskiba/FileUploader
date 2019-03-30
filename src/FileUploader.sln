@@ -3,7 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.28307.539
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FileUploader", "FileUploader\FileUploader.csproj", "{64A6F3CF-F5F5-4AA4-BE8C-FD9275664DC5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FileUploader", "FileUploader\FileUploader.csproj", "{64A6F3CF-F5F5-4AA4-BE8C-FD9275664DC5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FileUploader.Tests", "FileUploader.Tests\FileUploader.Tests.csproj", "{B60461CD-B3C0-4064-8BD3-708052EE6DDC}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +17,10 @@ Global
 		{64A6F3CF-F5F5-4AA4-BE8C-FD9275664DC5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{64A6F3CF-F5F5-4AA4-BE8C-FD9275664DC5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{64A6F3CF-F5F5-4AA4-BE8C-FD9275664DC5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B60461CD-B3C0-4064-8BD3-708052EE6DDC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B60461CD-B3C0-4064-8BD3-708052EE6DDC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B60461CD-B3C0-4064-8BD3-708052EE6DDC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B60461CD-B3C0-4064-8BD3-708052EE6DDC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

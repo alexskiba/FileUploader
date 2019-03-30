@@ -260,3 +260,4 @@ paket-files/
 __pycache__/
 *.pyc
 Data/iru-assignment-2018_big.csv
+LocalStorage/

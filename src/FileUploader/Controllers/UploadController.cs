@@ -1,5 +1,5 @@
-﻿using System.IO;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
+using FileUploader.Domain;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FileUploader.Controllers
@@ -8,14 +8,17 @@ namespace FileUploader.Controllers
     [ApiController]
     public class UploadController : ControllerBase
     {
+        private readonly StorageService _storageService;
+
+        public UploadController(StorageService storageService)
+        {
+            _storageService = storageService;
+        }
+
         [HttpPost]
         public async Task<IActionResult> Post()
         {
-            using (var fileStream = new FileStream("bin/tmp.csv", FileMode.Create))
-            {
-                await Request.Body.CopyToAsync(fileStream);
-                fileStream.Flush();
-            }
+            await _storageService.Save(Request.Body);
 
             return Ok();
         }

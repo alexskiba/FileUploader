@@ -1,15 +1,24 @@
 ﻿using System.Collections.Generic;
 using System.IO;
-using System.Threading.Tasks;
+using CsvHelper;
 using FileUploader.Domain;
 
 namespace FileUploader.Service
 {
     public class CsvProductMapper : IProductMapper
     {
-        public async Task<IEnumerable<Product>> MapProducts(Stream inputStream)
+        public IEnumerable<Product> MapProducts(Stream inputStream)
         {
-            return await Task.FromResult(new List<Product>());
+            using (var reader = new StreamReader(inputStream))
+            {
+                using (var csvReader = new CsvReader(reader))
+                {
+                    while (csvReader.Read())
+                    {
+                        yield return csvReader.GetRecord<Product>();
+                    }
+                }
+            }
         }
     }
 }

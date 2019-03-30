@@ -16,7 +16,14 @@ namespace FileUploader.Domain
 
         public async Task Save(Stream inputStream)
         {
-            await _storage.Save(await _mapper.MapProducts(inputStream));
+            try
+            {
+                await _storage.Save(_mapper.MapProducts(inputStream));
+            }
+            catch (CsvHelper.ValidationException e)
+            {
+                throw new ValidationException(e.Message, e);
+            }
         }
     }
 }

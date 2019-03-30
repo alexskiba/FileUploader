@@ -1,6 +1,9 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Net;
+using System.Threading.Tasks;
 using FileUploader.Domain;
 using Microsoft.AspNetCore.Mvc;
+using Serilog;
 
 namespace FileUploader.Controllers
 {
@@ -18,9 +21,22 @@ namespace FileUploader.Controllers
         [HttpPost]
         public async Task<IActionResult> Post()
         {
-            await _storageService.Save(Request.Body);
+            try
+            {
+                await _storageService.Save(Request.Body);
 
-            return Ok();
+                return Ok();
+            }
+            catch (ValidationException e)
+            {
+                Log.Warning(e, "Request validation failed");
+                return BadRequest(e.Message);
+            }
+            catch (ApplicationException e)
+            {
+                Log.Error(e, "Request execution failed");
+                return base.StatusCode((int) HttpStatusCode.InternalServerError, e.Message);
+            }
         }
     }
 }

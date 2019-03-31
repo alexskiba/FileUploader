@@ -4,9 +4,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Autofac;
+using CsvHelper;
 using FileUploader.Domain;
 using FileUploader.Service;
 using FileUploader.Storage;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using NSubstitute;
 using NUnit.Framework;
@@ -20,20 +23,7 @@ namespace FileUploader.Tests
         [SetUp]
         public void Setup()
         {
-            Log.Logger = new LoggerConfiguration()
-                .MinimumLevel.Verbose()
-                .WriteTo.Console()
-                .CreateLogger();
-        }
-
-        [Test]
-        public async Task Test()
-        {
-            var mapperMock = Substitute.For<IProductMapper>();
-            var storageMock = Substitute.For<IProductStorage>();
-            var storageService = new StorageService(mapperMock, storageMock);
-
-            await storageService.Save(null, null);
+            Log.Logger = new LoggerConfiguration().MinimumLevel.Verbose().WriteTo.Console().CreateLogger();
         }
 
         [Test]
@@ -57,6 +47,27 @@ namespace FileUploader.Tests
             stored.Length.ShouldBe(2);
             stored[0].ArticleCode.ShouldBe("test");
             stored[1].ArticleCode.ShouldBe("test_2");
+        }
+
+        [Test]
+        public async Task SqlStorage()
+        {
+            Assert.Fail("Specify the connection string!");
+            var connectionString = "";
+            var sessionId = Guid.NewGuid().ToString("N");
+            var optionsBuilder = new DbContextOptionsBuilder<ProductsContext>();
+            optionsBuilder.UseSqlServer(connectionString);
+            var dbContext = new ProductsContext(optionsBuilder.Options);
+            var sqlStorage = new SqlStorage(dbContext);
+
+            await sqlStorage.Save(new[]
+                                  {
+                                      new Product {Key = "key1", ArticleCode = "test", Price = 9},
+                                      new Product {Key = "key2", ArticleCode = "test_2"}
+                                  },
+                                  sessionId);
+
+            dbContext.Products.Count(p => p.SessionId == sessionId).ShouldBe(2);
         }
 
         [Test]
@@ -84,16 +95,71 @@ namespace FileUploader.Tests
             mapped[1].Key.ShouldBe("00000002groe56");
         }
 
-        [Test]
-        public void Autofac()
+        [TestCase("Sql")]
+        [TestCase("Json")]
+        public void Autofac(string storageType)
         {
             var builder = new ContainerBuilder();
-            builder.RegisterModule<AutofacModule>();
+            var configurationMock = Substitute.For<IConfiguration>();
+            configurationMock["ProductStorageType"].Returns(storageType);
+            configurationMock["LocalStoragePath"].Returns("not empty string");
+            configurationMock.GetConnectionString("ProductsDatabase").Returns("not empty string");
+            builder.RegisterModule(new AutofacModule(configurationMock));
             var container = builder.Build();
 
             var storageService = container.Resolve<StorageService>();
 
             storageService.ShouldNotBeNull();
+        }
+
+        [Test]
+        [Ignore("Data generator")]
+        public void GenerateBigFile()
+        {
+            var multiplicationFactor = 2000;
+            var src = @"..\..\..\..\..\Data\iru-assignment-2018_sample.csv";
+            var dst = @"..\..\..\..\..\Data\iru-assignment-2018_big.csv";
+
+            using (var reader = new StreamReader(src))
+            {
+                using (var csvReader = new CsvReader(reader))
+                {
+                    using (var writer = new StreamWriter(dst))
+                    {
+                        using (var csvWriter = new CsvWriter(writer))
+                        {
+                            csvReader.Read();
+                            csvReader.ReadHeader();
+                            var headers = csvReader.Context.HeaderRecord;
+                            foreach (var header in headers)
+                            {
+                                csvWriter.WriteField(header);
+                            }
+
+                            csvWriter.NextRecord();
+
+                            while (csvReader.Read())
+                            {
+                                for (var i = 0; i < multiplicationFactor; i++)
+                                {
+                                    foreach (var header in headers)
+                                    {
+                                        var value = csvReader.GetField(header);
+                                        if (header == "Key")
+                                        {
+                                            value = Guid.NewGuid().ToString("N");
+                                        }
+
+                                        csvWriter.WriteField(value);
+                                    }
+
+                                    csvWriter.NextRecord();
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 }

@@ -1,7 +1,5 @@
 ﻿using Autofac;
-using FileUploader.Domain;
 using FileUploader.Service;
-using FileUploader.Storage;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
@@ -31,7 +29,7 @@ namespace FileUploader
         // Don't build the container; that gets done for you.
         public void ConfigureContainer(ContainerBuilder builder)
         {
-            builder.RegisterModule<AutofacModule>();
+            builder.RegisterModule(new AutofacModule(Configuration));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

@@ -23,7 +23,8 @@ namespace FileUploader.Controllers
         {
             try
             {
-                await _storageService.Save(Request.Body);
+                // todo: implement sessionId
+                await _storageService.Save(Request.Body, Guid.NewGuid().ToString("N"));
 
                 return Ok();
             }

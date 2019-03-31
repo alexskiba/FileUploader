@@ -1,10 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
 using FileUploader.Domain;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using Serilog;
 
 namespace FileUploader.Storage
 {
@@ -21,10 +21,34 @@ namespace FileUploader.Storage
             }
         }
 
-        public async Task Save(IEnumerable<Product> products)
+        public async Task Save(IEnumerable<Product> products, string sessionId)
         {
-            var fileName = Path.Combine(_storageFolder, Guid.NewGuid().ToString("N") + ".json");
-            await File.WriteAllTextAsync(fileName, JsonConvert.SerializeObject(products.ToList()));
+            var fileName = Path.GetFullPath(Path.Combine(_storageFolder, sessionId + ".json"));
+            var productsCount = 0;
+
+            Log.Debug($"Starting saving products stream to {fileName}");
+            using (var streamWriter = new StreamWriter(fileName, false))
+            {
+                using (var jsonWriter = new JsonTextWriter(streamWriter))
+                {
+                    await jsonWriter.WriteStartArrayAsync();
+
+                    try
+                    {
+                        foreach (var product in products)
+                        {
+                            JObject.FromObject(product).WriteTo(jsonWriter);
+                            productsCount++;
+                        }
+                    }
+                    finally
+                    {
+                        await jsonWriter.WriteEndArrayAsync();
+                        await jsonWriter.FlushAsync();
+                        Log.Debug($"Saved {productsCount} products to {fileName}");
+                    }
+                }
+            }
         }
     }
 }

@@ -5,6 +5,6 @@ namespace FileUploader.Domain
 {
     public interface IProductStorage
     {
-        Task Save(IEnumerable<Product> products);
+        Task Save(IEnumerable<Product> products, string sessionId);
     }
 }
